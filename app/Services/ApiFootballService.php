@@ -1,0 +1,42 @@
+<?php
+
+namespace App\Services;
+
+// use GuzzleHttp\Client;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Http;
+
+class ApiFootballService
+{
+    // protected $client;
+
+    // public function __construct()
+    // {
+    //     $this->client = new Client([
+    //         'base_uri' => config('services.api-football.base_uri'),
+    //         'headers' => [
+    //             'x-rapidapi-key' => config('services.api-football.key'),
+    //             'Accept' => 'application/json',
+    //         ],
+    //     ]);
+    // }
+
+    public function makeRequest(string $endpoint, array $params) 
+    {
+
+        $url = config('services.api-football.base_uri') . $endpoint;
+
+
+        try {
+            $response = Http::withHeaders([
+                'x-rapidapi-key' => config('services.api-football.key'),
+                'Accept' => 'application/json',
+            ])->get($url, $params);
+
+            return json_decode($response->getBody());
+        } catch (\Exception $e) {
+            Log::error('API request failed: ' . $e->getMessage());
+            return null; // Handle error gracefully, e.g., return null or throw a custom exception
+        }
+    }
+}

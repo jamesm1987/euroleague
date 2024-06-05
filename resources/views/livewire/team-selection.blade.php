@@ -29,7 +29,7 @@
                         <div class="relative flex items-center p-2 border rounded-lg cursor-pointer"
                             :class="{ 'bg-blue-500 text-white': @json($selectedTeams).includes({{ $team->id }}) }"
                             wire:click="toggleTeam({{ $team->id }}, {{ $team->price }})">
-                            <img class="h-auto max-w-full mr-2" width="25" height="25" src="{{ \Team::getTeamLogo($team->id) }}" />
+                            <img class="h-auto max-w-full mr-2" width="25" height="25" src="{{ $team->logoUrl }}" />
                             <input type="checkbox" name="teams[]" value="{{ $team->id }}" data-price="{{ $team->getRawOriginal('price') }}" class="hidden team-checkbox">
                             <label for="team-{{ $team->id }}" class="ml-2 block text-sm">
                                 {{ $team->name }} ({!! $team->price !!})

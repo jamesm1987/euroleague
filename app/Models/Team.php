@@ -219,9 +219,9 @@ class Team extends Model
     
         return $goalsFor - $goalsAgainst;
     }
-
-    public static function getTeamLogo($team_api_id) {
-        return config('services.api-football.team_logo_url') . '/' . $team_api_id .'.png';
+    public function getLogoUrlAttribute()
+    {
+        return config('services.api-football.team_logo_url') . '/' . $this->team_api_id . '.png';
     }
 
 }

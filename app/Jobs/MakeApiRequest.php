@@ -38,6 +38,7 @@ class MakeApiRequest implements ShouldQueue
     public function handle(): void
     {
         $data = $this->apiFootballService->makeRequest($this->endpoint, $this->params);
+
         switch ($this->endpoint) {
             case 'teams':
                 ProcessApiLeagueTeams::dispatch($data->response, $this->params, $this->model);

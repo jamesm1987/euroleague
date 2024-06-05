@@ -47,7 +47,6 @@ class ProcessApiLeagueTeams implements ShouldQueue
 
         $this->league_id = $modelInstance->where('api_id', $this->params['league'])->pluck('id')->first();
 
-
         foreach ($this->response as $row) {
             $this->data[] = [
                 'name' => $row->team->name,
@@ -58,6 +57,7 @@ class ProcessApiLeagueTeams implements ShouldQueue
             ];
         }
 
+        
 
         if (!empty($this->data)) {
             Team::upsert($this->data, ['api_id', 'league_id'], ['name', 'updated_at']);

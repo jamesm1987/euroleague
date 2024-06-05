@@ -8,24 +8,11 @@ use Illuminate\Support\Facades\Http;
 
 class ApiFootballService
 {
-    // protected $client;
-
-    // public function __construct()
-    // {
-    //     $this->client = new Client([
-    //         'base_uri' => config('services.api-football.base_uri'),
-    //         'headers' => [
-    //             'x-rapidapi-key' => config('services.api-football.key'),
-    //             'Accept' => 'application/json',
-    //         ],
-    //     ]);
-    // }
 
     public function makeRequest(string $endpoint, array $params) 
     {
 
         $url = config('services.api-football.base_uri') . $endpoint;
-
 
         try {
             $response = Http::withHeaders([

@@ -27,9 +27,7 @@ class TeamResource extends Resource
     public static function form(Form $form): Form
     {
         return $form
-            ->schema([
-                TextInput::make('preferred_name')
-            ]);
+            ->schema([]);
     }
 
     public static function table(Table $table): Table
@@ -60,6 +58,23 @@ class TeamResource extends Resource
             RelationManagers\AwayFixturesRelationManager::class,
         ];
     }
+
+    public static function getWidgets(): array 
+    {
+        return [
+            TeamResource\Widgets\TeamStats::class,
+        ];
+
+    }
+
+    public static function getHeaderWidgets(): array 
+    {
+        return [
+            TeamResource\Widgets\TeamStats::class,
+        ];
+
+    }
+        
 
     public static function getPages(): array
     {

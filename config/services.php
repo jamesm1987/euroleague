@@ -39,6 +39,9 @@ return [
         'key' =>  env('API_FOOTBALL_API_KEY', ''),
         'base_uri' => env('API_FOOTBALL_BASE_URI', ''),
         'host' => env('API_FOOTBALL_HOST', ''),
+        'team_logo_url' => env('API_FOOTBALL_TEAM_LOGO_URL', ''),
+        'league_logo_url' => env('API_FOOTBALL_LEAGUE_LOGO_URL', ''),
+        'country_logo_url' => env('API_FOOTBALL_COUNTRY_LOGO_URL', ''),
     ],
 
 

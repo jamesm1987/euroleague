@@ -168,7 +168,7 @@ class Fixture extends Model
     }
 
 
-    public function League()
+    public function league()
     {
         return $this->belongsTo(League::class);
     }

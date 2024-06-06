@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Filament\Resources\TeamResource\RelationManagers;
 
 use Filament\Forms;
@@ -14,6 +13,7 @@ use App\Models\Fixture;
 class HomeFixturesRelationManager extends RelationManager
 {
     protected static string $relationship = 'homeFixtures';
+    protected static ?string $recordTitleAttribute = 'name';
 
     public function form(Form $form): Form
     {
@@ -28,36 +28,29 @@ class HomeFixturesRelationManager extends RelationManager
     public function table(Table $table): Table
     {
         return $table
-            ->recordTitleAttribute('name')
             ->columns([
-                Tables\Columns\TextColumn::make('homeTeam.name'),
-                Tables\Columns\TextColumn::make('awayTeam.name'),
+                Tables\Columns\TextColumn::make('homeTeam.name')->label('Home Team'),
+                Tables\Columns\TextColumn::make('awayTeam.name')->label('Away Team'),
                 Tables\Columns\TextColumn::make('homeTeamPoints')
                     ->label('Points')
-                    ->getStateUsing(function(Fixture $record){
-                    return $record->homeTeamPoints();
-                }),
+                    ->getStateUsing(fn(Fixture $record) => $record->homeTeamPoints()),
                 Tables\Columns\TextColumn::make('result')
                     ->label('Result')
-                    ->getStateUsing(function(Fixture $record){
-                        return $record->result();
-                    }),
+                    ->getStateUsing(fn(Fixture $record) => $record->result()),
             ])
             ->filters([
                 Tables\Filters\Filter::make('With Results')
-                ->query(fn (Builder $query) => $query->withResults()),
+                    ->query(fn (Builder $query) => $query->withResults()),
             ])
             ->headerActions([
                 Tables\Actions\CreateAction::make(),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make()
+                Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
+                Tables\Actions\DeleteBulkAction::make(),
             ]);
     }
 }

@@ -4,6 +4,8 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\TeamResource\Pages;
 use App\Filament\Resources\TeamResource\RelationManagers;
+use App\Filament\Resources\TeamResource\RelationManagers\HomeFixturesRelationManager;
+use App\Filament\Resources\TeamResource\RelationManagers\AwayFixturesRelationManager;
 use App\Models\Team;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -30,7 +32,9 @@ class TeamResource extends Resource
     public static function form(Form $form): Form
     {
         return $form
-            ->schema([]);
+            ->schema([
+                // Forms\Components\TextInput::make('name')
+            ]);
     }
 
     public static function table(Table $table): Table
@@ -60,8 +64,8 @@ class TeamResource extends Resource
     public static function getRelations(): array
     {
         return [
-            RelationManagers\HomeFixturesRelationManager::class,
-            RelationManagers\AwayFixturesRelationManager::class,
+            HomeFixturesRelationManager::class,
+            AwayFixturesRelationManager::class,
         ];
     }
 

@@ -10,8 +10,11 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Filament\Tables\Filters\SelectFilter;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+
+
 
 use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\TextInput;
@@ -38,7 +41,10 @@ class TeamResource extends Resource
                 Tables\Columns\TextColumn::make('points')
             ])
             ->filters([
-                //
+                SelectFilter::make('league')
+                    ->relationship('league', 'name')
+                    ->searchable()
+                    ->preload()
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),

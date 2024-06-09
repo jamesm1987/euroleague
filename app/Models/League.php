@@ -29,6 +29,11 @@ class League extends Model
     {
         return $this->hasMany(Team::class);
     }
+
+    public function leagueTable(): Collection
+    {
+        return $this->teams->sortByDesc('points');
+    }
 }
 
 

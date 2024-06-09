@@ -2,45 +2,44 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\TeamResource\Pages;
-use App\Filament\Resources\TeamResource\RelationManagers;
-use App\Filament\Resources\TeamResource\RelationManager;
-use App\Models\Team;
+use App\Filament\Resources\FixtureResource\Pages;
+use App\Filament\Resources\FixtureResource\RelationManagers;
+use App\Models\Fixture;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Filament\Tables\Filters\SelectFilter;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
-
+use Filament\Tables\Filters\SelectFilter;
 
 use Filament\Tables\Columns\TextColumn;
-use Filament\Forms\Components\TextInput;
 
-use App\Models\Fixture;
-
-class TeamResource extends Resource
+class FixtureResource extends Resource
 {
-    protected static ?string $model = Team::class;
+    protected static ?string $model = Fixture::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
     public static function form(Form $form): Form
     {
         return $form
-            ->schema([]);
+            ->schema([
+                //
+            ]);
     }
 
     public static function table(Table $table): Table
     {
         return $table
             ->columns([
-                TextColumn::make('name'),
-                Tables\Columns\TextColumn::make('points')
-            ])
+                TextColumn::make('homeTeam.name'),
+                TextColumn::make('awayTeam.name'),
+                TextColumn::make('date')->dateTime('F j, Y, g:i A'),
+
+            ])            
             ->filters([
                 SelectFilter::make('league')
                     ->relationship('league', 'name')
@@ -49,7 +48,6 @@ class TeamResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\ViewAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -61,19 +59,16 @@ class TeamResource extends Resource
     public static function getRelations(): array
     {
         return [
-            RelationManagers\HomeFixturesRelationManager::class,
-            RelationManagers\AwayFixturesRelationManager::class
+            //
         ];
     }
-       
 
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListTeams::route('/'),
-            'create' => Pages\CreateTeam::route('/create'),
-            'view' => Pages\ViewTeam::route('/{record}'),
-            'edit' => Pages\EditTeam::route('/{record}/edit'),
+            'index' => Pages\ListFixtures::route('/'),
+            'create' => Pages\CreateFixture::route('/create'),
+            'edit' => Pages\EditFixture::route('/{record}/edit'),
         ];
     }
 }

@@ -55,6 +55,7 @@ class LeagueResource extends Resource
                 TextColumn::make('name'),
                 IconColumn::make('active')
                 ->boolean()
+                
 
             ])
             ->filters([
@@ -101,7 +102,7 @@ class LeagueResource extends Resource
     {
         return [
             RelationManagers\TeamsRelationManager::class,
-            RelationManagers\FixturesRelationManager::class
+            RelationManagers\FixturesRelationManager::class,
         ];
     }
 
@@ -110,7 +111,8 @@ class LeagueResource extends Resource
         return [
             'index' => Pages\ListLeagues::route('/'),
             'view' => Pages\ViewLeague::route('/{record}'),
-            'edit' => Pages\EditLeague::route('/{record}/edit')
+            'edit' => Pages\EditLeague::route('/{record}/edit'),
+            'viewTable' => Pages\ViewLeagueTable::route('/{record}/table'),
         ];
     }
 }

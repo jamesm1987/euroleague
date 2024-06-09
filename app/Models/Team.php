@@ -35,7 +35,7 @@ class Team extends Model
         return $value;
     }
 
-       /**
+    /**
      * Get the team price html
      *
      * @return string
@@ -51,7 +51,6 @@ class Team extends Model
         return $this->belongsTo(League::class);
     }
 
-
     public function homeFixtures(): HasMany
     {
         return $this->hasMany(Fixture::class, 'home_team_id', 'api_id');
@@ -62,12 +61,14 @@ class Team extends Model
         return $this->hasMany(Fixture::class, 'away_team_id', 'api_id');
     }
 
-    
-
     public function getPointsAttribute()
     {
-
         return $this->calculateTotalPoints();
+    }
+
+    public function getFixturePointsAttribute()
+    {
+        return $this->calculateMatchPoints();
     }
 
 
@@ -115,7 +116,6 @@ class Team extends Model
     {
         return ($fixture->home_team_id === $team_id) ? $fixture->homeTeamPoints() : $fixture->awayTeamPoints();
     }
-
 
     private function getMatchPoints($fixture, $team_id)
     {

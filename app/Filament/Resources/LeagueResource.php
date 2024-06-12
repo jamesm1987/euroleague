@@ -49,7 +49,7 @@ class LeagueResource extends Resource
     }
 
     public static function table(Table $table): Table
-    {
+    {  
         return $table
             ->columns([
                 TextColumn::make('name'),
@@ -100,7 +100,7 @@ class LeagueResource extends Resource
 
     public static function getRelations(): array
     {
-        return [
+        return [    
             RelationManagers\TeamsRelationManager::class,
             RelationManagers\FixturesRelationManager::class,
         ];

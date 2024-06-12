@@ -12,7 +12,7 @@ use App\Filament\Resources\LeagueResource\Widgets\LeagueStandings;
 class ViewLeague extends ViewRecord
 {
     protected static string $resource = LeagueResource::class;
-
+    protected static string $view = 'filament.resources.league-resource.pages.view-league';
 
     public function getTitle(): string | Htmlable
     {

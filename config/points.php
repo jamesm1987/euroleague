@@ -1,19 +1,19 @@
 <?php
 
 return [
-    'result_points' => [
+    'result' => [
         'win' => 3,
         'draw' => 1,
     ],
-    'score_points' => [
-        'goal_difference' => 3,
-        'win' => [
-            'home' => 1,
-            'away' => 2,
+    'score' => [
+        'threshold' => 3,
+        'home' => [
+            'win' => 1,
+            'defeat' => -1,
         ],
-        'defeat' => [
-            'home' => -2,
-            'away' => -1
+        'away' => [
+            'win' => 2,
+            'defeat' => -2
         ]
     ],
 ];

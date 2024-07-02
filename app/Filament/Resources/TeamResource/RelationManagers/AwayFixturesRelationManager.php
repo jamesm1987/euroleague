@@ -41,7 +41,7 @@ class AwayFixturesRelationManager extends RelationManager
                 Tables\Columns\TextColumn::make('result')
                 ->label('Result')
                 ->getStateUsing(function(Fixture $record){
-                    return $record->result();
+                    return $record->resultScore();
                 }),
             ])
             ->filters([

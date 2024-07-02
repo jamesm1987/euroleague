@@ -14,7 +14,7 @@ class TeamStats extends BaseWidget
     protected function getCards(): array
     {
 
-        $winLossDraw = "{$this->record->getMatchesWon()} / {$this->record->getMatchesLost()} / {$this->record->getMatchesDrawn()}";
+        $winLossDraw = "{$this->record->matches_won} / {$this->record->matches_lost} / {$this->record->matches_drawn}";
 
         return [
 

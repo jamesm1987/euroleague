@@ -39,7 +39,7 @@ class TeamResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('name'),
-                Tables\Columns\TextColumn::make('points')
+                TextColumn::make('points')
             ])
             ->filters([
                 SelectFilter::make('league')

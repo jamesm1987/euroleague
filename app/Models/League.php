@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 class League extends Model
 {
@@ -30,10 +31,22 @@ class League extends Model
         return $this->hasMany(Team::class);
     }
 
-    public function leagueTable(): Collection
+    public static function leagueTable()
     {
-        return $this->teams->sortByDesc('points');
+        $query = DB::table('teams')
+        ->select('teams.*', DB::raw('SUM(fixtures.fixture_points) as total_fixture_points'))
+        ->leftJoin('fixtures', function ($join) {
+            $join->on('teams.api_id', '=', 'fixtures.home_team_id')
+                 ->orWhere('teams.api_id', '=', 'fixtures.away_team_id');
+        })
+        ->groupBy('teams.api_id')
+        ->get();
+
+    
+    return $query;
     }
+
+
 }
 
 

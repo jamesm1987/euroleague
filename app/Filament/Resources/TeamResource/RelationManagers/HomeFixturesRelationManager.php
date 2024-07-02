@@ -36,7 +36,7 @@ class HomeFixturesRelationManager extends RelationManager
                     ->getStateUsing(fn(Fixture $record) => $record->homeTeamPoints()),
                 Tables\Columns\TextColumn::make('result')
                     ->label('Result')
-                    ->getStateUsing(fn(Fixture $record) => $record->result()),
+                    ->getStateUsing(fn(Fixture $record) => $record->resultScore()),
             ])
             ->filters([
                 Tables\Filters\Filter::make('With Results')

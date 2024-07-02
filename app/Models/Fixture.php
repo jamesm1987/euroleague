@@ -61,9 +61,15 @@ class Fixture extends Model
         return $this->calculateScorePoints('away');
     }
 
-    public function result()
+    public function resultScore()
     {
         return "{$this->home_team_score} - {$this->away_team_score}";
+    }
+
+
+    public function getGoalDifferenceAttribute()
+    {
+        return $this->home_team_score - $this->away_team_score;
     }
 
     public function calculateFixturePoints($team_type)
@@ -107,6 +113,11 @@ class Fixture extends Model
     
         return $points;
 
+    }
+
+    public function fixturePoints(): HasMany
+    {
+        return $this->hasMany(FixturePoint::class);
     }
 
     public function calculateResultPoints($team_type)

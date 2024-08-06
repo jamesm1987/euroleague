@@ -112,7 +112,6 @@ class LeagueResource extends Resource
             'index' => Pages\ListLeagues::route('/'),
             'view' => Pages\ViewLeague::route('/{record}'),
             'edit' => Pages\EditLeague::route('/{record}/edit'),
-            'viewTable' => Pages\ViewLeagueTable::route('/{record}/table'),
         ];
     }
 }

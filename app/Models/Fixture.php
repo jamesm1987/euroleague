@@ -187,8 +187,8 @@ class Fixture extends Model
     public function scopeWithResults(Builder $query)
     {
         return $query->whereNotNull('home_team_score')
-                     ->whereNotNull('away_team_score')
-                     ->where('date', '<', Carbon::now());
+                     ->whereNotNull('away_team_score');
+                    //  ->where('date', '<', Carbon::now());
     }
 
     public function getResultKey($outcome): string

@@ -9,160 +9,141 @@ use App\Models\PointsRule;
 class PointsCalculator
 {
 
-    protected $pointsRules;
+    protected $fixturePoints = [];
 
-    public function __construct()
+    protected Fixture $fixture;
+
+    /**
+     * Create a new PointsCalculator instance.
+     *
+     * @param Fixture $fixture
+     */
+
+    public function __construct(Fixture $fixture)
     {
-        $this->pointsRules = PointsRule::all();
+        $this->fixture = $fixture;
     }
+
+
     
     /**
      * Calculate points for a given fixture.
      *
-     * @param Fixture $fixture
-     * @return int
+     * @return array
      */
 
-    public function calculatePoints(Fixture $fixture)
+    public function calculate(): array
     {
 
-        $homeTeamPoints = 0;
-        $awayTeamPoints = 0;
+        $outcome = $this->getOutcome();
 
-        foreach ($this->pointsRules as $rule) {
-            if ($this->matchesCondition($fixture, $rule, $fixture->home_team_id, true)) {
-                $homeTeamPoints += $rule->value;
-            }
 
-            if ($this->matchesCondition($fixture, $rule, $fixture->away_team_id, false)) {
-                $awayTeamPoints += $rule->value;
-            }
+        switch ($outcome['result']) {
+
+            case 'draw':
+
+                $this->fixturePoints[] = $this->createFixturePoint($this->fixture->homeTeam->id, 'draw');
+                $this->fixturePoints[] = $this->createFixturePoint($this->fixture->awayTeam->id, 'draw');
+            
+
+            break;
+
+
+            case 'home':
+
+                $this->fixturePoints[] = $this->createFixturePoint($this->fixture->homeTeam->id, 'win');
+
+                if ($outcome['score_points']) {
+
+                    $this->fixturePoints[] = $this->createFixturePoint($this->fixture->homeTeam->id, 'home_win_score_points');
+                    $this->fixturePoints[] = $this->createFixturePoint($this->fixture->awayTeam->id, 'away_defeat_score_points');
+                }
+
+            break;
+
+            case 'away':
+
+                $this->fixturePoints[] = $this->createFixturePoint($this->fixture->awayTeam->id, 'win');
+
+                if ($outcome['score_points']) {
+
+                    $this->fixturePoints[] = $this->createFixturePoint($this->fixture->homeTeam->id,'home_defeat_score_points');
+                    $this->fixturePoints[] = $this->createFixturePoint($this->fixture->awayTeam->id, 'away_win_score_points');
+                }
+
+            break;
+
         }
 
-
-        return [
-            'home_team_points' => $homeTeamPoints,
-            'away_team_points' => $awayTeamPoints
-        ];
+        return $this->fixturePoints;
     }
 
-    protected function matchesCondition(Fixture $fixture, PointsRule $rule, $team_id, bool $is_home_team)
-    {
-        $condition = $rule->condition;
-        // $thresh
-    }
-
-    /**
-     * Calculate the result points for a given fixture.
-     *
-     * @param Fixture $fixture
-     * @return int
-     */
-    
-     public function calculateResultPoints(Fixture $fixture)
-     {
-        $homeTeamPoints = 0;
-        $awayTeamPoints = 0;
-
-        // Determine the fixture outcome
-        $outcome = $this->getOutcome($fixure);
-
-        // Get the appropriate rule based on the outcome
-        $rule = PointsRule::where('outcome', $outcome['outcome'])
-            ->whereNull('condition')
-            ->first();
-
-        if (!$outcome['result']) {
-            return [
-                'homeTeamPoints' => $rule->value,
-                'awayTeamPoints' => $rule->value,
-            ];
-        }
-
-        return [
-            'homeTeamPoints' => $outcome['result'] === 'home' ? $rule->value : 0,
-            'awayTeamPoints' => $outcome['result'] === 'away' ? $rule->value : 0
-        ];
-        
-     }
-
-    /**
-     * Calculate home team score points for a given fixture.
-     *
-     * @param Fixture $fixture
-     * @return int
-     */
-    
-     public function calculateHomeScorePoints(Fixture $fixture)
-     {
-
-        // Determine the fixture outcome
-        $result = $this->getOutcome($fixure);
-
-        if (!$result['score_points']) {
-            return;
-        }
-
-
-        // Get the appropriate rule based on the outcome
-        $rule = PointsRule::where('outcome', $result['outcome'])
-            ->whereNull('condition')
-            ->first();
-
-        return $rule ? $rule->value : 0;
-     }   
-     
-     
-    /**
-     * Calculate away team score points for a given fixture.
-     *
-     * @param Fixture $fixture
-     * @return int
-     */
-    
-     public function calculateAwayScorePoints(Fixture $fixture)
-     {
-
-        // Determine the fixture outcome
-        $result = $this->getOutcome($fixure);
-
-        if (!$result['score_points']) {
-            return;
-        }
-
-        // Get the appropriate rule based on the outcome
-        $rule = PointsRule::where('outcome', $result['outcome'])
-            ->whereNull('condition')
-            ->first();
-
-        return $rule ? $rule->value : 0;
-     }   
-
+ 
     /**
      * Determine the outcome of the fixture.
      *
-     * @param Fixture $fixture
+     * @param Fixture $this->fixture
      * @return string
      */
-    protected function getOutcome(Fixture $fixture): array
+
+    protected function getOutcome(): array
     {
+        
         return [
-            'goal_difference' => $fixture->goalDifference,
-            'score_points' => $this->exceedsThreshold($fixture),
+            'result' => $this->fixture->getResultKey($this->fixture->home_team_score <=> $this->fixture->away_team_score),
+            'goal_difference' => $this->fixture->goalDifference,
+            'score_points' => $this->exceedsThreshold(),
         ];
 
     }
 
-    protected function exceedsThreshold($fixture)
+    /**
+     * Check if the goal difference exceeds the threshold.
+     *
+     * @return bool
+     */
+
+    protected function exceedsThreshold(): bool
     {
         $threshold = config('points.score.threshold');
-
-        return $fixture->goalDifference > $threshold || $fixture->goalDifference < -$threshold;
+        
+        return $this->fixture->goalDifference >= $threshold || $this->fixture->goalDifference <= -$threshold;
     }
 
-    private function getPointsByKey($key)
+    /**
+     * Get the ID of a points rule by its key.
+     *
+     * @param string $key
+     * @return int
+     * @throws \Exception
+     */
+
+    private function getPointsByKey($key): int
     {
         $rule = PointsRule::where('key', $key)->first();
+
+        if (!$rule) {
+            throw new \Exception("Points rule not found for key: {$key}");
+        }
+        
+        return $rule->id;
+    }
+
+    /**
+     * Create an array for a fixture point record.
+     *
+     * @param int $team_id
+     * @param string $key
+     * @return array
+     */
+
+    private function createFixturePoint($team_id, $key): array
+    {
+        return [
+            'fixture_id' => $this->fixture->id,
+            'team_id' => $team_id,
+            'points_rule_id' => $this->getPointsByKey($key)
+        ];
     }
 }
 

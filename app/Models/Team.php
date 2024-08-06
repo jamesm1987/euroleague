@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use App\Traits\CollectsPoints;
 
@@ -19,6 +20,7 @@ class Team extends Model
         'preferred_name'
     ];
 
+    protected $table = 'teams';
     
     /**
      * Get the team name
@@ -78,7 +80,6 @@ class Team extends Model
         return $this->calculateMatchPoints();
     }
 
-
     public function fixtures()
     {
         return collect($this->homeFixtures)->merge($this->awayFixtures);
@@ -91,24 +92,20 @@ class Team extends Model
 
     public function calculateTotalPoints(): int
     {
-        $points = 0;
+        $fixturePoints = $this->fixturePoints()->with('pointsRule')->get();
 
+        return $fixturePoints->sum(fn ($fixturePoint) => $fixturePoint->pointsRule->value ?? 0);
 
-        foreach ($this->fixtures() as $fixture) {
-            $points += $this->getTeamPoints($fixture, $this->api_id);
-        }
-
-
-        return $points;
     }
 
     public function calculateMatchPoints(): int
     {
         $points = 0;
 
-        foreach ($this->fixtures() as $fixture) {
-            $points += $this->getMatchPoints($fixture, $this->api_id);
-        }
+        $this->fixturePoints()->each(function ($fixture) use (&$points) {
+
+            $points += $this->getMatchPoints($fixture, $this->id);
+        });
 
         return $points;
     }
@@ -131,7 +128,7 @@ class Team extends Model
 
     private function getMatchPoints($fixture, $team_id)
     {
-        return ($fixture->home_team_id === $team_id) ? $fixture->homeTeamResultPoints() : $fixture->awayTeamResultPoints();
+        return  ($this->id === $team_id) ? 1 : 0;
     }
 
     private function getScorePoints($fixture, $team_id)
@@ -313,4 +310,16 @@ class Team extends Model
         return config('services.api-football.team_logo_url') . '/' . $this->team_api_id . '.png';
     }
 
+
+    public function scopeWithPointsSum(Builder $query, $league_id)
+    {
+        return $query->leftJoin('fixture_point', 'teams.id', '=', 'fixture_point.team_id')
+                     ->leftJoin('points_rules', 'fixture_point.points_rule_id', '=', 'points_rules.id')
+                     ->where('teams.league_id', $league_id)
+                     ->select('teams.*')
+                     ->selectRaw('COALESCE(SUM(points_rules.value), 0) as points_sum')
+                     ->groupBy('teams.id');
+    }
 }
+
+

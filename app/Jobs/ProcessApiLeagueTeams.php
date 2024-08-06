@@ -11,7 +11,6 @@ use App\Traits\ExtractsArrayData;
 
 use App\Models\Team;
 
-use Illuminate\Support\Facades\Log;
 
 class ProcessApiLeagueTeams implements ShouldQueue
 {

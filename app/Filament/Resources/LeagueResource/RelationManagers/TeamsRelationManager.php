@@ -6,9 +6,12 @@ use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
+use App\Models\Team;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+
+use Filament\Tables\Columns\TextColumn;
 
 
 class TeamsRelationManager extends RelationManager
@@ -29,12 +32,16 @@ class TeamsRelationManager extends RelationManager
     {
 
         return $table
+            ->query(Team::withPointsSum($this->ownerRecord->id))
             ->recordTitleAttribute('name')
             ->columns([
-                Tables\Columns\TextColumn::make('name')->searchable(),
-                Tables\Columns\TextColumn::make('price')->money('GBP')
+                TextColumn::make('name')->searchable(),
+                TextColumn::make('price')->money('GBP')
                     ->suffix('m')->sortable(),
-                Tables\Columns\TextColumn::make('points'),
+
+                TextColumn::make('points_sum')
+                    ->label('Points')
+                    ->sortable(),
             ])
             ->filters([
 

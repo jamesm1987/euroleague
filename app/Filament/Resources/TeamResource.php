@@ -31,7 +31,10 @@ class TeamResource extends Resource
     public static function form(Form $form): Form
     {
         return $form
-            ->schema([]);
+            ->schema([
+                TextInput::make('preferred_name'),
+                TextInput::make('price'),
+            ]);
     }
 
     public static function table(Table $table): Table
@@ -39,7 +42,16 @@ class TeamResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('name'),
+                TextColumn::make('price')->sortable(),
                 TextColumn::make('points')
+                ->getStateUsing(fn (Team $record) => $record->calculateTotalPoints())
+                    ->sortable(query: function (Builder $query, string $direction) {
+                        $query->select('teams.*')
+                              ->leftJoin('fixture_point', 'teams.id', '=', 'fixture_point.team_id')
+                              ->leftJoin('points_rules', 'fixture_point.points_rule_id', '=', 'points_rules.id')
+                              ->groupBy('teams.id')
+                              ->orderByRaw('COALESCE(SUM(points_rules.value), 0) ' . $direction);
+                    }),
             ])
             ->filters([
                 SelectFilter::make('league')

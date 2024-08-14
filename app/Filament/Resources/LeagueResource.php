@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\LeagueResource\Pages;
 use App\Filament\Resources\LeagueResource\RelationManagers;
 use App\Models\League;
+use App\Models\Fixture;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -13,6 +14,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Forms\Components\Toggle;
 use App\Filament\Tables\Actions\ApiLoadData;
+use Filament\Tables\Actions\Action;
 
 use Filament\Notifications\Notification;
 
@@ -93,6 +95,12 @@ class LeagueResource extends Resource
                             }),                        
 
                 
+            ])
+            ->headerActions([
+                Action::make('calculate points')
+                ->action(function () {
+                    Fixture::calculatePoints();
+                })
             ])
             ->bulkActions([
             ]);

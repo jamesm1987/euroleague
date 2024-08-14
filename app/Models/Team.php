@@ -17,7 +17,8 @@ class Team extends Model
 
     protected $fillable = [
         'name',
-        'preferred_name'
+        'preferred_name',
+        'price'
     ];
 
     protected $table = 'teams';
@@ -114,26 +115,26 @@ class Team extends Model
     {
         $points = 0;
 
-        foreach ($this->fixtures() as $fixture) {
-            $points += $this->getScorePoints($fixture, $this->api_id);
-        }
+        $this->fixturePoints()->each(function ($fixture) use (&$points) {
+            $points += $this->getScorePoints($fixture, $this->id);
+        });
 
         return $points;
     }
 
     private function getTeamPoints($fixture, $team_id)
     {
-        return ($fixture->home_team_id === $team_id) ? $fixture->homeTeamPoints() : $fixture->awayTeamPoints();
+        return ($fixture->team_id === $team_id) ? $fixture->homeTeamPoints() : $fixture->awayTeamPoints();
     }
 
     private function getMatchPoints($fixture, $team_id)
     {
-        return  ($this->id === $team_id) ? 1 : 0;
+        return $fixture->teamResultPoints();
     }
 
     private function getScorePoints($fixture, $team_id)
     {
-        return ($fixture->home_team_id === $team_id) ? $fixture->homeTeamScorePoints() : $fixture->awayTeamScorePoints();
+        return ($fixture->team_id === $team_id) ? $fixture->homeTeamScorePoints() : $fixture->awayTeamScorePoints();
     }
 
     public function getMatchesWonAttribute()

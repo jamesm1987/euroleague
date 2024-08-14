@@ -93,7 +93,7 @@ class ProcessApiLeagueFixtures implements ShouldQueue
         }
         
         if (!empty($this->fixture_points)) {
-
+            
             $data = collect($this->fixture_points)->flatten(1)->toArray();
 
             FixturePoint::upsert($data, ['fixture_id', 'team_id'], ['points_rule_id', 'updated_at']);

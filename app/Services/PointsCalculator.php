@@ -29,53 +29,60 @@ class PointsCalculator
     /**
      * Calculate points for a given fixture.
      *
-     * @return array
+     * @return mixed
      */
 
-    public function calculate(): array
+    public function calculate(): mixed
     {
 
-        $outcome = $this->getOutcome();
+        
 
-
-        switch ($outcome['result']) {
-
-            case 'draw':
-
-                $this->fixturePoints[] = $this->createFixturePoint($this->fixture->homeTeam->id, 'draw');
-                $this->fixturePoints[] = $this->createFixturePoint($this->fixture->awayTeam->id, 'draw');
+        if ($this->fixture->homeTeam && $this->fixture->awayTeam) {
             
+            $outcome = $this->getOutcome();
 
-            break;
+                switch ($outcome['result']) {
+
+                    case 'draw':
+
+                        $this->fixturePoints[] = $this->createFixturePoint($this->fixture->homeTeam->id, 'draw');
+                        $this->fixturePoints[] = $this->createFixturePoint($this->fixture->awayTeam->id, 'draw');
+                    
+
+                    break;
 
 
-            case 'home':
+                    case 'home':
 
-                $this->fixturePoints[] = $this->createFixturePoint($this->fixture->homeTeam->id, 'win');
+                        $this->fixturePoints[] = $this->createFixturePoint($this->fixture->homeTeam->id, 'win');
 
-                if ($outcome['score_points']) {
+                        if ($outcome['score_points']) {
 
-                    $this->fixturePoints[] = $this->createFixturePoint($this->fixture->homeTeam->id, 'home_win_score_points');
-                    $this->fixturePoints[] = $this->createFixturePoint($this->fixture->awayTeam->id, 'away_defeat_score_points');
+                            $this->fixturePoints[] = $this->createFixturePoint($this->fixture->homeTeam->id, 'home_win_score_points');
+                            $this->fixturePoints[] = $this->createFixturePoint($this->fixture->awayTeam->id, 'away_defeat_score_points');
+                        }
+
+                    break;
+
+                    case 'away':
+
+                        $this->fixturePoints[] = $this->createFixturePoint($this->fixture->awayTeam->id, 'win');
+
+                        if ($outcome['score_points']) {
+
+                            $this->fixturePoints[] = $this->createFixturePoint($this->fixture->homeTeam->id,'home_defeat_score_points');
+                            $this->fixturePoints[] = $this->createFixturePoint($this->fixture->awayTeam->id, 'away_win_score_points');
+                        }
+
+                    break;
+
                 }
 
-            break;
+                return $this->fixturePoints;
+            
+            }
 
-            case 'away':
-
-                $this->fixturePoints[] = $this->createFixturePoint($this->fixture->awayTeam->id, 'win');
-
-                if ($outcome['score_points']) {
-
-                    $this->fixturePoints[] = $this->createFixturePoint($this->fixture->homeTeam->id,'home_defeat_score_points');
-                    $this->fixturePoints[] = $this->createFixturePoint($this->fixture->awayTeam->id, 'away_win_score_points');
-                }
-
-            break;
-
-        }
-
-        return $this->fixturePoints;
+            return false;
     }
 
  

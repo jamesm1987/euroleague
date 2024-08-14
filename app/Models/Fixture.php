@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Services\PointsCalculator;
 use Carbon\Carbon;
 
 
@@ -40,9 +41,9 @@ class Fixture extends Model
         return $this->calculateFixturePoints('away');
     }
 
-    public function homeTeamResultPoints()
+    public function teamResultPoints()
     {
-        return $this->calculateResultPoints('home');
+        return $this->calculateResultPoints();
     }
 
     public function awayTeamResultPoints()
@@ -83,11 +84,11 @@ class Fixture extends Model
 
         $outcome = $this->getResultKey($this->home_team_score <=> $this->away_team_score);
 
-        $drawPoints = config('points.result_points.draw');
-        $winPoints = config('points.result_points.win');
-        $goalDifferenceThreshold = config('points.score_points.goal_difference');
-        $defeatPoints = config('points.score_points.defeat.'.$team_type);
-        $winScorePoints = config('points.score_points.win.'.$team_type);
+        $drawPoints = config('points.result.draw');
+        $winPoints = config('points.result.win');
+        $goalDifferenceThreshold = config('points.score.threshold');
+        $defeatPoints = config("points.score.{$team_type}.defeat");
+        $winScorePoints = config("points.score.{$team_type}.win");
 
         if ($outcome === 'draw') {
             return $drawPoints;
@@ -198,5 +199,22 @@ class Fixture extends Model
             0 => 'draw',
             -1 => 'away',
         };
+    }
+
+    public static function calculatePoints()
+    {
+        $fixtures = Fixture::all();
+        $fixture_points = [];
+
+        foreach ($fixtures as $fixture) {
+            $fixture_points[] = (new PointsCalculator($fixture))->calculate();
+        }
+
+        if (!empty($fixture_points)) {
+            
+            $data = collect($fixture_points)->flatten(1)->toArray();
+
+            FixturePoint::upsert($data, ['fixture_id', 'team_id'], ['points_rule_id', 'updated_at']);
+        }
     }
 }

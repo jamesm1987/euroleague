@@ -14,6 +14,8 @@ use Filament\Tables\Table;
 use Filament\Tables\Filters\SelectFilter;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Actions\Action;
 
 
 
@@ -60,8 +62,22 @@ class TeamResource extends Resource
                     ->preload()
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Action::make('edit')
+                ->label('Edit')
+                ->icon('heroicon-o-pencil')
+                ->form([
+                    // Define the fields you want in the modal here
+                    TextInput::make('preferred_name'),
+                    TextInput::make('price')
+                        ->required()
+                ])
+                ->modalHeading('Edit Team')
+                ->modalButton('Save')
+                ->action(function ($record, array $data) {
+                    $record->update($data);
+                }),
                 Tables\Actions\ViewAction::make(),
+                Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

@@ -66,6 +66,20 @@ class Team extends Model
         return $this->hasMany(Fixture::class, 'away_team_id', 'api_id');
     }
 
+    public function homeResults(): HasMany
+    {
+        return $this->hasMany(Fixture::class, 'home_team_id', 'api_id')
+        ->whereNotNull('home_team_score')
+        ->whereNotNull('away_team_score');
+    }
+
+    public function awayResults(): HasMany
+    {
+        return $this->hasMany(Fixture::class, 'away_team_id', 'api_id')
+        ->whereNotNull('home_team_score')
+        ->whereNotNull('away_team_score');
+    }
+
     public function fixturePoints(): HasMany
     {
         return $this->hasMany(FixturePoint::class);
@@ -86,6 +100,12 @@ class Team extends Model
         return collect($this->homeFixtures)->merge($this->awayFixtures);
     }
 
+    public function results()
+    {
+        return collect($this->homeResults)->merge($this->awayResults);
+    }
+
+
     private function isHomeTeam($fixture): bool
     {
         return $fixture->home_team_id === $this->api_id;
@@ -96,6 +116,17 @@ class Team extends Model
         $fixturePoints = $this->fixturePoints()->with('pointsRule')->get();
 
         return $fixturePoints->sum(fn ($fixturePoint) => $fixturePoint->pointsRule->value ?? 0);
+
+    }
+
+    public function calculateScorePoints(): int
+    {
+        $scorePoints = $this->fixturePoints()->with('pointsRule')
+        ->whereHas('pointsRule', function($query) {
+            $query->whereNotNull('threshold');
+        })->get();
+
+        return $scorePoints->sum(fn ($scorePoint) => $scorePoint->pointsRule->value ?? 0);
 
     }
 
@@ -111,16 +142,16 @@ class Team extends Model
         return $points;
     }
 
-    public function calculateScorePoints(): int
-    {
-        $points = 0;
+    // public function calculateScorePoints(): int
+    // {
+    //     $points = 0;
 
-        $this->fixturePoints()->each(function ($fixture) use (&$points) {
-            $points += $this->getScorePoints($fixture, $this->id);
-        });
+    //     $this->fixturePoints()->each(function ($fixture) use (&$points) {
+    //         $points += $this->getScorePoints($fixture, $this->id);
+    //     });
 
-        return $points;
-    }
+    //     return $points;
+    // }
 
     private function getTeamPoints($fixture, $team_id)
     {
@@ -141,10 +172,10 @@ class Team extends Model
     {
         $won = 0;
 
-        foreach ($this->fixtures() as $fixture) {
+        foreach ($this->results() as $result) {
 
-            $outcome = $fixture->getResultKey($fixture->home_team_score <=> $fixture->away_team_score);
-            $isHomeTeam = $this->api_id === $fixture->home_team_id;
+            $outcome = $result->getResultKey($result->home_team_score <=> $result->away_team_score);
+            $isHomeTeam = $this->api_id === $result->home_team_id;
 
             if ($outcome === 'draw') {
                 continue;
@@ -169,10 +200,10 @@ class Team extends Model
 
         $drawn = 0;
 
-        foreach ($this->fixtures() as $fixture) {
+        foreach ($this->results() as $result) {
 
-            $outcome = $fixture->getResultKey($fixture->home_team_score <=> $fixture->away_team_score);
-
+            $outcome = $result->getResultKey($result->home_team_score <=> $result->away_team_score);
+            
             if ($outcome === 'draw') {
                 $drawn++;
             }
@@ -185,10 +216,10 @@ class Team extends Model
     {
         $lost = 0;
 
-        foreach ($this->fixtures() as $fixture) {
+        foreach ($this->results() as $result) {
 
-            $outcome = $fixture->getResultKey($fixture->home_team_score <=> $fixture->away_team_score);
-            $isHomeTeam = $this->api_id === $fixture->home_team_id;
+            $outcome = $result->getResultKey($result->home_team_score <=> $result->away_team_score);
+            $isHomeTeam = $this->api_id === $result->home_team_id;
 
             if ($outcome === 'draw') {
                 continue;
@@ -217,10 +248,10 @@ class Team extends Model
     {
         $goals = 0;
 
-        foreach ($this->fixtures() as $fixture) {
+        foreach ($this->results() as $result) {
 
-            if ($fixture->home_team_id === $this->api_id) {
-                $goals += $fixture->home_team_score;
+            if ($result->home_team_id === $this->api_id) {
+                $goals += $result->home_team_score;
             }
         }
 
@@ -231,10 +262,10 @@ class Team extends Model
     {
         $goals = 0;
 
-        foreach ($this->fixtures() as $fixture) {
+        foreach ($this->results() as $result) {
 
-            if ($fixture->home_team_id === $this->api_id) {
-                $goals += $fixture->away_team_score;
+            if ($result->home_team_id === $this->api_id) {
+                $goals += $result->away_team_score;
             }
         }
 
@@ -245,10 +276,10 @@ class Team extends Model
     {
         $goals = 0;
 
-        foreach ($this->fixtures() as $fixture) {
+        foreach ($this->results() as $result) {
 
-            if ($fixture->away_team_id === $this->api_id) {
-                $goals += $fixture->away_team_score;
+            if ($result->away_team_id === $this->api_id) {
+                $goals += $result->away_team_score;
             }
         }
 
@@ -259,10 +290,10 @@ class Team extends Model
     {
         $goals = 0;
 
-        foreach ($this->fixtures() as $fixture) {
+        foreach ($this->results() as $result) {
 
-            if ($fixture->away_team_id === $this->api_id) {
-                $goals += $fixture->home_team_score;
+            if ($result->away_team_id === $this->api_id) {
+                $goals += $result->home_team_score;
             }
         }
 
@@ -290,12 +321,12 @@ class Team extends Model
         $goalsFor = 0;
         $goalsAgainst = 0;
     
-        foreach ($this->fixtures() as $fixture) {
+        foreach ($this->results() as $result) {
             
-            if ($fixture->home_team_id === $this->api_id) {
+            if ($result->home_team_id === $this->api_id) {
                 
-                $goalsFor += $fixture->home_team_score;
-                $goalsAgainst += $fixture->away_team_score;
+                $goalsFor += $result->home_team_score;
+                $goalsAgainst += $result->away_team_score;
             
             } else {
                 

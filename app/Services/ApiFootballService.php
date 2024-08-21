@@ -23,7 +23,7 @@ class ApiFootballService
             return json_decode($response->getBody());
         } catch (\Exception $e) {
             Log::error('API request failed: ' . $e->getMessage());
-            return null; // Handle error gracefully, e.g., return null or throw a custom exception
+            return null;
         }
     }
 }

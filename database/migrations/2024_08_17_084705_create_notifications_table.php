@@ -4,9 +4,6 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-use App\Models\Team;
-use App\Models\PointsRule;
-
 return new class extends Migration
 {
     /**
@@ -14,10 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('trophy_point', function (Blueprint $table) {
-            $table->id();
-            $table->foreignIdFor(Team::class);
-            $table->foreignIdFor(PointsRule::class);
+        Schema::create('notifications', function (Blueprint $table) {
+            $table->uuid('id')->primary();
+            $table->string('type');
+            $table->morphs('notifiable');
+            $table->text('data');
+            $table->timestamp('read_at')->nullable();
             $table->timestamps();
         });
     }
@@ -27,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('trophy_points');
+        Schema::dropIfExists('notifications');
     }
 };

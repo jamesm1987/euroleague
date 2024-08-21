@@ -4,9 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Model;
 use App\Services\PointsCalculator;
 use Carbon\Carbon;
+
+
 
 
 class Fixture extends Model
@@ -75,42 +78,48 @@ class Fixture extends Model
 
     public function calculateFixturePoints($team_type)
     {
-        $points = 0;
 
-
-        $teamGoals = ($team_type === 'home') ? $this->home_team_score : $this->away_team_score;
-        $opponentGoals = ($team_type === 'home') ? $this->away_team_score : $this->home_team_score;
-
-
-        $outcome = $this->getResultKey($this->home_team_score <=> $this->away_team_score);
-
-        $drawPoints = config('points.result.draw');
-        $winPoints = config('points.result.win');
-        $goalDifferenceThreshold = config('points.score.threshold');
-        $defeatPoints = config("points.score.{$team_type}.defeat");
-        $winScorePoints = config("points.score.{$team_type}.win");
-
-        if ($outcome === 'draw') {
-            return $drawPoints;
+        
+        if (is_null($this->home_team_score) && is_null($this->away_team_score)) {
+            return;
         }
-    
 
-        if ($outcome === $team_type) {
-            $points += $winPoints;
-        }
-    
 
-        $goalDifference = abs($this->home_team_score - $this->away_team_score);
-        $hasScorePoints = $goalDifference >= $goalDifferenceThreshold;
-    
+            $points = 0;
+            $teamGoals = ($team_type === 'home') ? $this->home_team_score : $this->away_team_score;
+            $opponentGoals = ($team_type === 'home') ? $this->away_team_score : $this->home_team_score;
 
-        if ($hasScorePoints) {
-            if ($outcome !== $team_type) {
-                $points += $defeatPoints;
-            } else {
-                $points += $winScorePoints;
+
+            $outcome = $this->getResultKey($this->home_team_score <=> $this->away_team_score);
+
+            $drawPoints = config('points.result.draw');
+            $winPoints = config('points.result.win');
+            $goalDifferenceThreshold = config('points.score.threshold');
+            $defeatPoints = config("points.score.{$team_type}.defeat");
+            $winScorePoints = config("points.score.{$team_type}.win");
+
+            if ($outcome === 'draw') {
+                return $drawPoints;
             }
-        }
+        
+
+            if ($outcome === $team_type) {
+                $points += $winPoints;
+            }
+        
+
+            $goalDifference = abs($this->home_team_score - $this->away_team_score);
+            $hasScorePoints = $goalDifference >= $goalDifferenceThreshold;
+        
+
+            if ($hasScorePoints) {
+                if ($outcome !== $team_type) {
+                    $points += $defeatPoints;
+                } else {
+                    $points += $winScorePoints;
+                }
+            }
+    
     
         return $points;
 
@@ -118,7 +127,7 @@ class Fixture extends Model
 
     public function fixturePoints(): HasMany
     {
-        return $this->hasMany(FixturePoint::class);
+        return $this->hasMany(FixturePoint::class, 'fixture_id');
     }
 
     public function calculateResultPoints($team_type)
@@ -185,11 +194,10 @@ class Fixture extends Model
         return $this->belongsTo(League::class);
     }
 
-    public function scopeWithResults(Builder $query)
+    public function scopeWithResults($query)
     {
         return $query->whereNotNull('home_team_score')
                      ->whereNotNull('away_team_score');
-                    //  ->where('date', '<', Carbon::now());
     }
 
     public function getResultKey($outcome): string
@@ -203,13 +211,13 @@ class Fixture extends Model
 
     public static function calculatePoints()
     {
-        $fixtures = Fixture::all();
+        $results = self::withResults()->get();
         $fixture_points = [];
 
-        foreach ($fixtures as $fixture) {
-            $fixture_points[] = (new PointsCalculator($fixture))->calculate();
+        foreach ($results as $result) {    
+            $fixture_points[] = (new PointsCalculator($result))->calculate();
         }
-
+        
         if (!empty($fixture_points)) {
             
             $data = collect($fixture_points)->flatten(1)->toArray();

@@ -16,7 +16,8 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Actions\Action;
-
+use App\Filament\Imports\TeamPriceImporter;
+use Filament\Tables\Actions\ImportAction;
 
 
 use Filament\Tables\Columns\TextColumn;
@@ -43,10 +44,18 @@ class TeamResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('name'),
+                TextColumn::make('name')->searchable(),
                 TextColumn::make('price')->sortable(),
                 TextColumn::make('points')
                 ->getStateUsing(fn (Team $record) => $record->calculateTotalPoints())
+                    ->sortable(query: function (Builder $query, string $direction) {
+                        $query->select('teams.*')
+                              ->leftJoin('fixture_point', 'teams.id', '=', 'fixture_point.team_id')
+                              ->leftJoin('points_rules', 'fixture_point.points_rule_id', '=', 'points_rules.id')
+                              ->groupBy('teams.id')
+                              ->orderByRaw('COALESCE(SUM(points_rules.value), 0) ' . $direction);
+                    }),
+                    TextColumn::make('score_points')->getStateUsing(fn (Team $record) => $record->calculateScorePoints())
                     ->sortable(query: function (Builder $query, string $direction) {
                         $query->select('teams.*')
                               ->leftJoin('fixture_point', 'teams.id', '=', 'fixture_point.team_id')
@@ -78,6 +87,11 @@ class TeamResource extends Resource
                 }),
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\DeleteAction::make(),
+            ])
+            ->headerActions([
+                ImportAction::make()
+                ->importer(TeamPriceImporter::class)
+                ->label('Import Prices')
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

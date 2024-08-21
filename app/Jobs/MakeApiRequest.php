@@ -47,6 +47,10 @@ class MakeApiRequest implements ShouldQueue
             case 'fixtures':
                 ProcessApiLeagueFixtures::dispatch($data->response, $this->params, $this->model);
             break;
+
+            case 'players/topscorers':
+                ProcessApiLeagueGoalScorers::dispatch($data->response, $this->params, $this->model);
+            break;
         }
 
     }

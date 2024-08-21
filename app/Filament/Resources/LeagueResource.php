@@ -92,7 +92,8 @@ class LeagueResource extends Resource
                                 Notification::make()
                                 ->title('Fixtures imported successfully')
                                 ->send();
-                            }),                        
+                            }),    
+                          
 
                 
             ])
@@ -100,7 +101,8 @@ class LeagueResource extends Resource
                 Action::make('calculate points')
                 ->action(function () {
                     Fixture::calculatePoints();
-                })
+                }),
+
             ])
             ->bulkActions([
             ]);

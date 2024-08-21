@@ -66,7 +66,7 @@ class ProcessApiLeagueFixtures implements ShouldQueue
                 'home_team_id' => $row->teams->home->id,
                 'away_team_id' => $row->teams->away->id,
                 'home_team_score' => ($row->fixture->status->short) === 'FT' ? $row->score->fulltime->home : null,
-                  'away_team_score' => ($row->fixture->status->short) === 'FT' ? $row->score->fulltime->away : null,
+                'away_team_score' => ($row->fixture->status->short) === 'FT' ? $row->score->fulltime->away : null,
                 'date' => $row->fixture->date,
                 'created_at' => now(),
                 'updated_at' => now(),
@@ -81,22 +81,31 @@ class ProcessApiLeagueFixtures implements ShouldQueue
             Fixture::upsert($this->data, ['api_id'], ['home_team_score', 'away_team_score', 'updated_at']);
         }
 
-        $this->fixtures = Fixture::whereIn('api_id', $this->fixture_ids)->get();
+        $this->fixtures = Fixture::withResults()
+            ->whereIn('api_id', $this->fixture_ids)
+            ->get();
 
-        if (!empty($this->fixtures)) {
+
+        if ($this->fixtures->isNotEmpty()) {
+
 
             $this->fixtures->each(function ($fixture) {
+
+                if ($fixture->fixturePoints()->exists()) {
+                    return;
+                }
+        
 
                 $this->fixture_points[] = (new PointsCalculator($fixture))->calculate();
             });
 
         }
         
-        if (!empty($this->fixture_points)) {
+        if (count($this->fixture_points) > 0) {
             
             $data = collect($this->fixture_points)->flatten(1)->toArray();
 
-            FixturePoint::upsert($data, ['fixture_id', 'team_id'], ['points_rule_id', 'updated_at']);
+            FixturePoint::insert($data);
         }
 
 

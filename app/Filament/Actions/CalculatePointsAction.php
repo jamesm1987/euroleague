@@ -19,6 +19,6 @@ class CalculatePointsAction extends Action
     public function handle()
     {
 
-        $this->redirectSuccess(__('Fixtures imported successfully.'));
+        $this->redirectSuccess(__('Points calculated successfully.'));
     }
 }

@@ -21,7 +21,7 @@ class TeamStats extends BaseWidget
             Card::make('Total Points', $this->record->calculateTotalPoints()),
             Card::make('Match Points', $this->record->calculateMatchPoints()),
             Card::make('Score Points', $this->record->calculateScorePoints()),
-            Card::make('Played', $this->record->fixtures()->count()),
+            Card::make('Played', $this->record->results()->count()),
             
             Card::make('W / L / D', $winLossDraw),
             Card::make('GD', $this->record->getGoalDifference()),

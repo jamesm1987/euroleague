@@ -149,7 +149,9 @@ class PointsCalculator
         return [
             'fixture_id' => $this->fixture->id,
             'team_id' => $team_id,
-            'points_rule_id' => $this->getPointsByKey($key)
+            'points_rule_id' => $this->getPointsByKey($key),
+            'created_at' => now(),
+            'updated_at' => now()
         ];
     }
 }

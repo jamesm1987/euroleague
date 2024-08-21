@@ -27,6 +27,7 @@ class ResetFixtures extends Command
     public function handle()
     {
         DB::table('fixtures')->truncate();
+        DB::table('fixture_point')->truncate();
         $this->info('Fixtures have been reset for the new season.');
     }
 }

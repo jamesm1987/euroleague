@@ -160,7 +160,7 @@ class Team extends Model
 
     private function getMatchPoints($fixture, $team_id)
     {
-        return $fixture->teamResultPoints();
+        return $fixture->teamResultPoints($team_id);
     }
 
     private function getScorePoints($fixture, $team_id)
@@ -330,8 +330,8 @@ class Team extends Model
             
             } else {
                 
-                $goalsFor += $fixture->away_team_score;
-                $goalsAgainst += $fixture->home_team_score;
+                $goalsFor += $result->away_team_score;
+                $goalsAgainst += $result->home_team_score;
             }
         }
     

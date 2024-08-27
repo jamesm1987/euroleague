@@ -15,8 +15,8 @@ Route::get('/', function () {
     ]);
 });
 
-Route::get('/teams-selection', TeamsSelectionController::class)->name('team.selection')->middleware('auth');;
-
+Route::get('/teams-selection', [TeamsSelectionController::class, 'index'])->name('teams.selection')->middleware('auth');
+Route::post('/teams-selection', [TeamsSelectionController::class, 'store'])->name('teams.selection')->middleware('auth');
 
 Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');

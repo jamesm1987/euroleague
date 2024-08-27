@@ -38,19 +38,29 @@
                                         {{ league.name }}
                                     </p>
 
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
                                         <div
                                             v-for="team in league.teams"
                                             :key="team.id"
-                                            class="relative flex items-center p-2 border rounded-lg cursor-pointer"
-                                            :class="{ 'bg-blue-500 text-white': selectedTeams.includes(team.id) }"
-                                            @click="toggleTeam(team.id, team.price)"
-                                        >
-                                            <img class="h-auto max-w-full mr-2" width="25" height="25" :src="getTeamLogoUrl(team.api_id)" />
+                                            class="relative flex items-center p-2 border rounded-lg cursor-pointer">
+                                            <img class="absolute h-full w-full object-contain pointer-events-none pl-2 py-3 object-left top-0 left-0 mr-2" width="32" height="32" :src="getTeamLogoUrl(team.api_id)" />
                                             <input :id="'team-' + team.id" type="checkbox" class="hidden">
-                                            <label :for="'team-' + team.id" class="ml-2 block text-sm">
+                                            <label :for="'team-' + team.id" class="pl-10 block text-sm w-full flex justify-between items-center">
                                                 {{ team.name }} (£{{ team.price }}m)
-                                            </label>
+                                            
+                                            <button
+                                                :disabled="!selectedTeams.includes(team.id) && leagueSelections[league.id] >= 2"
+                                                :class="{
+                                                    'bg-blue-500 text-white border-transparent': selectedTeams.includes(team.id), 
+                                                    'bg-transparent text-blue-700 border-blue-500 hover:bg-blue-500 hover:text-white hover:border-transparent': !selectedTeams.includes(team.id) && leagueSelections[league.id] < 2,
+                                                    'opacity-50 cursor-not-allowed': !selectedTeams.includes(team.id) && leagueSelections[league.id] >= 2
+                                                }"
+                                                class="font-semibold py-2 px-4 rounded border"
+                                                @click.stop.prevent="toggleTeam(team.id, team.price, league.id)">
+                                                {{ selectedTeams.includes(team.id) ? 'Selected' : 'Select' }}
+                                            </button>
+                                        </label>
+
                                         </div>
                                     </div>
                                 </section>
@@ -78,35 +88,70 @@ export default {
         return {
             activeTab: 0,
             selectedTeams: [],
+            leagueSelections: {},
             remainingBudget: 125
-        };
+        }
     },
     methods: {
         getCountryLogoUrl(api_id) {
-            return `${this.$page.props.apiUrls.country_logo_url}/${api_id}.svg`;
+            return `${this.$page.props.apiUrls.country_logo_url}/${api_id}.svg`
         },
         getLeagueLogoUrl(api_id) {
-            return `${this.$page.props.apiUrls.league_logo_url}/${api_id}.png`;
+            return `${this.$page.props.apiUrls.league_logo_url}/${api_id}.png`
         },
         getTeamLogoUrl(api_id) {
-            return `${this.$page.props.apiUrls.team_logo_url}/${api_id}.png`;
+            return `${this.$page.props.apiUrls.team_logo_url}/${api_id}.png`
         },
-        toggleTeam(teamId, teamPrice) {
-            console.log(teamPrice)
+        toggleTeam(teamId, teamPrice, leagueId) {
+            const selectedTeamsInLeague = this.leagueSelections[leagueId] || 0;
+
             if (this.selectedTeams.includes(teamId)) {
-                this.selectedTeams = this.selectedTeams.filter(id => id !== teamId);
-                this.remainingBudget += teamPrice;
+                this.selectedTeams = this.selectedTeams.filter(id => id !== teamId)
+                this.remainingBudget += teamPrice
+
+                this.leagueSelections[leagueId]--
             } else {
-                if (this.remainingBudget >= teamPrice) {
-                    this.selectedTeams.push(teamId);
-                    this.remainingBudget -= teamPrice;
+
+                if (this.remainingBudget >= teamPrice && selectedTeamsInLeague < 2) {
+                    this.selectedTeams.push(teamId)
+                    this.remainingBudget -= teamPrice
+                    if (!this.leagueSelections[leagueId]) {
+                        this.leagueSelections[leagueId] = 1
+                    } else {
+                        this.leagueSelections[leagueId]++
+                        this.text = 'Select'
+                    }
                 }
             }
+
             console.log(this.selectedTeams)
         },
+        getTeamLeagueId(teamId) {
+
+            for (let league of this.leagues) {
+                if (league.teams.some(team => team.id === teamId)) {
+                    return league.id
+                }
+            }
+            return null;
+        },
         submitSelections() {
-            // Submit selected teams via an API call or form submission
-            console.log('Selected teams:', this.selectedTeams);
+            if (Object.values(this.leagueSelections).some(count => count !== 2)) {
+                alert('Please select exactly 2 teams from each league.');
+                return;
+            }
+
+            this.$inertia.post('/teams-selection', {
+                selectedTeams: this.selectedTeams
+            }, {
+                // Optional success message or redirection can go here
+                onSuccess: () => {
+                    console.log('Selection submitted successfully!');
+                },
+                onError: () => {
+                    console.error('There was an error submitting the selections.');
+                }
+            });
         }
     }
 };

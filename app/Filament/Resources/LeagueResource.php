@@ -50,6 +50,7 @@ class LeagueResource extends Resource
             ]);
     }
 
+
     public static function table(Table $table): Table
     {  
         return $table
@@ -66,22 +67,30 @@ class LeagueResource extends Resource
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\ViewAction::make(),
-                Tables\Actions\Action::make('fetchTeamsData')
+
+                Tables\Actions\ActionGroup::make([
+                    Tables\Actions\Action::make('fetchTeamsData')
                     ->label('Import Teams')
+                    ->visible(function($record) {
+                        return $record->teams()->count() === 0;
+                    })
                         ->action(function($record){
                             dispatch(new MakeApiRequest(app(ApiFootballService::class), 'teams', [
                                 'league' => $record->api_id,
                                 'season' => config('services.api-football.season'),
-                            ], static::$model));
-
-
+                            ], static::$model))->hidden(true);
+    
+    
                             Notification::make()
                             ->title('Teams imported successfully')
                             ->send();
                         }),
-
+    
                         Tables\Actions\Action::make('fetchFixturesData')
                         ->label('Import Fixtures')
+                        ->visible(function( $record){
+                            return $record->fixtures->count() === 0;
+                        })
                             ->action(function($record){
                                 dispatch(new MakeApiRequest(app(ApiFootballService::class), 'fixtures', [
                                     'league' => $record->api_id,
@@ -92,9 +101,42 @@ class LeagueResource extends Resource
                                 Notification::make()
                                 ->title('Fixtures imported successfully')
                                 ->send();
-                            }),    
-                          
-
+                            }), 
+                            
+                            Tables\Actions\Action::make('fetchResultsData')
+                            ->label('Import Results')
+                            ->visible(function( $record){
+                                return $record->fixtures->count() > 0;
+                            })
+                            ->action(function($record){
+                                dispatch(new MakeApiRequest(app(ApiFootballService::class), 'fixtures', [
+                                    'league' => $record->api_id,
+                                    'season' => config('services.api-football.season'),
+                                ], static::$model));
+    
+    
+                                Notification::make()
+                                ->title('Results imported successfully')
+                                ->send();
+                            }),  
+                            
+                            Tables\Actions\Action::make('fetchGoalScorersData')
+                            ->label('Import Top Goalscorers')
+                            ->visible(function( $record){
+                                return $record->fixtures->count() > 0;
+                            })
+                            ->action(function($record){
+                                dispatch(new MakeApiRequest(app(ApiFootballService::class), 'players/topscorers', [
+                                    'league' => $record->api_id,
+                                    'season' => config('services.api-football.season'),
+                                ], static::$model));
+    
+    
+                                Notification::make()
+                                ->title('Top goalscorers imported successfully')
+                                ->send();
+                            }),                              
+                ]),
                 
             ])
             ->headerActions([

@@ -5,6 +5,7 @@ namespace App\Jobs;
 use App\Services\ApiFootballService;
 use App\Jobs\ProcessApiLeagueTeams;
 use App\Jobs\ProcessApiLeagueResults;
+use App\Jobs\ProcessApiLeagueGoalScorers;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;

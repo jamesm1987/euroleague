@@ -8,4 +8,6 @@ use Illuminate\Database\Eloquent\Model;
 class GoalScorerPoint extends Model
 {
     use HasFactory;
+
+    protected $table = 'goalscorer_point';
 }

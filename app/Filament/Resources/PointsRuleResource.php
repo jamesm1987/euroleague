@@ -31,11 +31,22 @@ class PointsRuleResource extends Resource
             ->schema([
                 TextInput::make('description'),
                 TextInput::make('key'),
+                Select::make('type')
+                    ->options([
+                        'result' => 'Result',
+                        'score' => 'Score',
+                        'goalscorer' => 'Goalscorer',
+                        'trophy'    => 'Trophy'
+                    ]),
                 Select::make('outcome')
                     ->options([
                         'win' => 'Win',
                         'draw' => 'Draw',
                         'defeat' => 'Defeat',
+                        '1' => 'First',
+                        '2' => 'Second',
+                        '3' => 'Third',
+                        '4' => 'Fourth',
                     ]),
                 Select::make('condition')
                     ->options([

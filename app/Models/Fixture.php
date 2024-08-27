@@ -44,9 +44,9 @@ class Fixture extends Model
         return $this->calculateFixturePoints('away');
     }
 
-    public function teamResultPoints()
+    public function teamResultPoints($team_id)
     {
-        return $this->calculateResultPoints();
+        return $this->calculateResultPoints($team_id);
     }
 
     public function awayTeamResultPoints()
@@ -130,13 +130,12 @@ class Fixture extends Model
         return $this->hasMany(FixturePoint::class, 'fixture_id');
     }
 
-    public function calculateResultPoints($team_type)
+    public function calculateResultPoints($team_id)
     {
         $points = 0;
 
-
-        $teamGoals = ($team_type === 'home') ? $this->home_team_score : $this->away_team_score;
-        $opponentGoals = ($team_type === 'home') ? $this->away_team_score : $this->home_team_score;
+        $teamGoals = $this->home_team->id === $team_id ? $this->home_team_score : $this->away_team_score;
+        $opponentGoals =  $this->away_team->id === $team_id ? $this->away_team_score : $this->home_team_score;
 
 
         $outcome = $this->getResultKey($this->home_team_score <=> $this->away_team_score);

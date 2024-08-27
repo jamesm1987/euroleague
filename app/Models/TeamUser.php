@@ -5,18 +5,19 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class PointsRule extends Model
+class TeamUser extends Model
 {
     use HasFactory;
 
+    protected $table = 'team_user';
+
     protected $fillable = [
-        'description',
-        'type',
-        'key',
-        'outcome',
-        'condition',
-        'threshold',
-        'value'
+        'user_id',
+        'team_id'
     ];
 
+    public function teams()
+    {
+        return $this->hasMany(Team::class);
+    }
 }

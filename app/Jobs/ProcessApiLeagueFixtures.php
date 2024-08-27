@@ -12,7 +12,6 @@ use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 
 
 use App\Models\Fixture;
-use App\Models\FixturePoint;
 
 
 use Illuminate\Support\Facades\Log;
@@ -81,34 +80,6 @@ class ProcessApiLeagueFixtures implements ShouldQueue
             Fixture::upsert($this->data, ['api_id'], ['home_team_score', 'away_team_score', 'updated_at']);
         }
 
-        $this->fixtures = Fixture::withResults()
-            ->whereIn('api_id', $this->fixture_ids)
-            ->get();
-
-
-        if ($this->fixtures->isNotEmpty()) {
-
-
-            $this->fixtures->each(function ($fixture) {
-
-                if ($fixture->fixturePoints()->exists()) {
-                    return;
-                }
-        
-
-                $this->fixture_points[] = (new PointsCalculator($fixture))->calculate();
-            });
-
-        }
-        
-        if (count($this->fixture_points) > 0) {
-            
-            $data = collect($this->fixture_points)->flatten(1)->toArray();
-
-            FixturePoint::insert($data);
-        }
-
-
-        
+ 
     }
 }

@@ -36,8 +36,9 @@ class TeamsRelationManager extends RelationManager
             ->recordTitleAttribute('name')
             ->columns([
                 TextColumn::make('name')->searchable(),
-                TextColumn::make('price')->money('GBP')
-                    ->suffix('m')->sortable(),
+                TextColumn::make('price')->formatStateUsing(fn($state) => number_format($state, 0))
+                ->prefix('£')    
+                 ->suffix('m')->sortable(),
 
                 TextColumn::make('points_sum')
                     ->label('Points')
